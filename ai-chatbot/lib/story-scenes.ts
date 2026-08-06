@@ -11,6 +11,9 @@ import type { Episode, Scene, StoryState } from "@/lib/story-types";
 /** 장면 전환에 필요한 최소 대화 횟수 (임시: 데모용으로 2회로 낮춤) */
 const MIN_TURNS_BEFORE_TRANSITION = 2;
 
+/** 새 대화(세션)를 시작할 때 사용하는 기본 호감도 */
+export const INITIAL_AFFECTION = 20;
+
 export const lunaEpisode: Episode = {
   id: "roof-first-meeting",
   title: "옥상에서 만난 아이",

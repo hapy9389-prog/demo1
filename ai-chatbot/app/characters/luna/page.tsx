@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCharacterById } from "@/lib/characters";
 import { lunaEpisode } from "@/lib/story-scenes";
+import { LunaSessionManager } from "@/components/luna-session-manager";
 
 const luna = getCharacterById("luna")!;
 
@@ -61,12 +62,7 @@ export default function LunaCharacterPage() {
         </p>
       </section>
 
-      <Link
-        href="/chat/luna"
-        className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-violet-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-violet-500 sm:w-auto sm:self-start"
-      >
-        채팅 시작
-      </Link>
+      <LunaSessionManager />
     </main>
   );
 }

@@ -1,6 +1,11 @@
 // 루나 전용 스토리 채팅 화면입니다. 선택지 없이 자유 입력만 받습니다.
 // 사용자가 메시지를 보내면 mockStoryEngine이 (지금은 목업으로) 답변/호감도/이벤트를
 // 계산하고, 조건이 충족되면 checkSceneTransition에 따라 다음 장면으로 넘어갑니다.
+//
+// 대화 시작값(initialMessages/initialState)과 상태가 바뀔 때마다 알려주는
+// onStateChange는 부모(LunaChatScreen)가 세션 저장을 위해 넘겨줍니다.
+// 이 컴포넌트 자신은 "지금 어떤 세션인지"는 전혀 모르고, 그저 주어진 값으로
+// 대화를 진행시키는 역할만 합니다.
 
 "use client";
 
@@ -20,6 +25,12 @@ import type { StoryState } from "@/lib/story-types";
 
 type StoryChatPanelProps = {
   character: Character;
+  /** 이 대화 세션이 지금까지 가지고 있던 메시지 목록 */
+  initialMessages: Message[];
+  /** 이 대화 세션의 현재 장면/호감도/턴수/이벤트 상태 */
+  initialState: StoryState;
+  /** 메시지나 상태가 바뀔 때마다 최신값을 통째로 알려주는 콜백 (세션 저장용) */
+  onStateChange: (messages: Message[], state: StoryState) => void;
 };
 
 /** 호감도가 0보다 작아지거나 100보다 커지지 않게 잘라줍니다. */
@@ -27,24 +38,18 @@ function clampAffection(value: number): number {
   return Math.min(100, Math.max(0, value));
 }
 
-const INITIAL_AFFECTION = 20;
-
 function createMessage(sender: Message["sender"], text: string): Message {
   return { id: crypto.randomUUID(), sender, text };
 }
 
-export function StoryChatPanel({ character }: StoryChatPanelProps) {
-  const firstScene = lunaEpisode.scenes[0];
-
-  const [state, setState] = useState<StoryState>({
-    sceneId: firstScene.id,
-    turnCount: 0,
-    affection: INITIAL_AFFECTION,
-    triggeredEvents: [],
-  });
-  const [messages, setMessages] = useState<Message[]>(() => [
-    createMessage("ai", getSceneOpeningLine(firstScene.id)),
-  ]);
+export function StoryChatPanel({
+  character,
+  initialMessages,
+  initialState,
+  onStateChange,
+}: StoryChatPanelProps) {
+  const [state, setState] = useState<StoryState>(initialState);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
 
   const currentScene = getSceneById(lunaEpisode, state.sceneId);
   const sceneNumber =
@@ -84,8 +89,11 @@ export function StoryChatPanel({ character }: StoryChatPanelProps) {
       newMessages.push(createMessage("ai", getSceneOpeningLine(nextScene.id)));
     }
 
-    setMessages((prev) => [...prev, ...newMessages]);
+    const finalMessages = [...messages, ...newMessages];
+
+    setMessages(finalMessages);
     setState(updatedState);
+    onStateChange(finalMessages, updatedState);
   }
 
   return (
