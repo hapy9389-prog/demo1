@@ -7,7 +7,11 @@
 import { useState } from "react";
 import { CharacterSidebar } from "@/components/character-sidebar";
 import { ChatPanel } from "@/components/chat-panel";
+import { StoryChatPanel } from "@/components/story-chat-panel";
 import { characters, type Message } from "@/lib/characters";
+
+// 이번 프로토타입에서는 루나만 스토리 진행형 대화를 사용합니다.
+const STORY_CHARACTER_ID = "luna";
 
 // 캐릭터 id별로 메시지 목록을 저장하는 타입
 type MessagesByCharacter = Record<string, Message[]>;
@@ -55,11 +59,15 @@ export default function Home() {
         selectedId={selectedId}
         onSelect={setSelectedId}
       />
-      <ChatPanel
-        character={selectedCharacter}
-        messages={messages}
-        onSend={handleSend}
-      />
+      {selectedId === STORY_CHARACTER_ID ? (
+        <StoryChatPanel character={selectedCharacter} />
+      ) : (
+        <ChatPanel
+          character={selectedCharacter}
+          messages={messages}
+          onSend={handleSend}
+        />
+      )}
     </div>
   );
 }
