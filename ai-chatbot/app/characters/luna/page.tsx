@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getCharacterById } from "@/lib/characters";
 import { lunaEpisode } from "@/lib/story-scenes";
 import { LunaSessionManager } from "@/components/luna-session-manager";
+import { LunaEpisodeProgress } from "@/components/luna-episode-progress";
 
 const luna = getCharacterById("luna")!;
 
@@ -61,6 +62,8 @@ export default function LunaCharacterPage() {
           {lunaEpisode.title}
         </p>
       </section>
+
+      <LunaEpisodeProgress />
 
       <LunaSessionManager />
     </main>

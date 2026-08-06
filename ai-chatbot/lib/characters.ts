@@ -2,11 +2,55 @@
 // 아직 실제 AI API나 데이터베이스는 연결하지 않았기 때문에,
 // 화면에 보여줄 캐릭터 정보와 대화 내용을 여기서 직접 정의합니다.
 
-export type Message = {
+/** 보통의 채팅 말풍선 메시지 */
+export type ChatMessage = {
   id: string;
+  kind: "chat";
   sender: "user" | "ai";
   text: string;
 };
+
+/**
+ * 장면이 바뀔 때 채팅 안에 끼워 넣는 "장면 전환 카드" 메시지입니다.
+ * 일반 말풍선과 구분되게 렌더링되고, 세션의 messages 배열에 함께 저장됩니다.
+ * nextSceneNumber/nextSceneTitle이 null이면 "에피소드 완료" 카드로 표시합니다.
+ */
+export type SceneTransitionMessage = {
+  id: string;
+  kind: "scene-transition";
+  narration: string;
+  nextSceneNumber: number | null;
+  nextSceneTitle: string | null;
+};
+
+/**
+ * 후일담 중 "다음 에피소드 예고"를 보여주는 카드 메시지입니다.
+ * 장면 전환 카드와는 별개의 종류라, 기존 SceneTransitionMessage/StoryTransitionCard는
+ * 전혀 건드리지 않고 이 메시지 종류만 새로 추가했습니다.
+ */
+export type EpisodePreviewMessage = {
+  id: string;
+  kind: "episode-preview";
+  narration: string;
+  previewLabel: string;
+};
+
+/**
+ * 채팅 안에 끼워 넣는 "시스템 안내" 메시지입니다 (예: 같은 장면에 오래 머물러 있을 때
+ * 대화 힌트를 확인해보라는 안내). 루나가 직접 하는 말이 아니라는 걸 보여주기 위해
+ * 일반 말풍선과는 다른 스타일로 렌더링됩니다.
+ */
+export type SystemNoticeMessage = {
+  id: string;
+  kind: "system-notice";
+  text: string;
+};
+
+export type Message =
+  | ChatMessage
+  | SceneTransitionMessage
+  | EpisodePreviewMessage
+  | SystemNoticeMessage;
 
 export type Character = {
   id: string;
@@ -45,16 +89,19 @@ export const characters: Character[] = [
     initialMessages: [
       {
         id: "luna-1",
+        kind: "chat",
         sender: "ai",
         text: "안녕! 나는 루나야. 오늘 하루는 어땠어?",
       },
       {
         id: "luna-2",
+        kind: "chat",
         sender: "user",
         text: "안녕 루나! 오늘 조금 피곤한 하루였어.",
       },
       {
         id: "luna-3",
+        kind: "chat",
         sender: "ai",
         text: "고생 많았어. 잠깐 쉬면서 나랑 편하게 이야기 나누자.",
       },
@@ -70,16 +117,19 @@ export const characters: Character[] = [
     initialMessages: [
       {
         id: "kai-1",
+        kind: "chat",
         sender: "ai",
         text: "왔구나! 오늘은 같이 뭐 하고 놀까?",
       },
       {
         id: "kai-2",
+        kind: "chat",
         sender: "user",
         text: "새로 나온 게임 얘기하고 싶어.",
       },
       {
         id: "kai-3",
+        kind: "chat",
         sender: "ai",
         text: "좋아! 어떤 게임인지 자세히 말해줘, 궁금해 죽겠어.",
       },
@@ -95,16 +145,19 @@ export const characters: Character[] = [
     initialMessages: [
       {
         id: "haeun-1",
+        kind: "chat",
         sender: "ai",
         text: "안녕하세요, 저는 하은이에요. 요즘 읽고 있는 책이 있나요?",
       },
       {
         id: "haeun-2",
+        kind: "chat",
         sender: "user",
         text: "네, 요즘 소설 한 권을 읽고 있어요.",
       },
       {
         id: "haeun-3",
+        kind: "chat",
         sender: "ai",
         text: "좋네요! 어떤 이야기인지 정말 궁금해요.",
       },

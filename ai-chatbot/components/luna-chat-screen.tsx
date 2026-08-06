@@ -17,8 +17,7 @@ import {
 } from "@/lib/story-session-storage";
 import type { StorySession } from "@/lib/story-session-types";
 import type { StoryState } from "@/lib/story-types";
-import { INITIAL_AFFECTION, lunaEpisode } from "@/lib/story-scenes";
-import { getSceneOpeningLine } from "@/lib/mock-story-engine";
+import { INITIAL_AFFECTION, getSceneOpeningLine, lunaEpisode } from "@/lib/story-scenes";
 
 // 이 화면은 루나 전용이라 데이터가 항상 존재한다는 걸 알고 있습니다.
 const luna = getCharacterById("luna")!;
@@ -69,8 +68,18 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
         currentSceneId: state.sceneId,
         affection: state.affection,
         turnCount: state.turnCount,
-        triggeredEvents: state.triggeredEvents,
-        conversationCount: messages.filter((m) => m.sender === "user").length,
+        sceneProgressFlags: state.sceneProgressFlags,
+        completedSceneIds: state.completedSceneIds,
+        unlockedSceneIds: state.unlockedSceneIds,
+        storyEventIds: state.storyEventIds,
+        episodeStatus: state.episodeStatus,
+        epilogueStage: state.epilogueStage,
+        fatherMessageSent: state.fatherMessageSent,
+        fatherReplyReceived: state.fatherReplyReceived,
+        promises: state.promises,
+        sceneHintNoticeShown: state.sceneHintNoticeShown,
+        conversationCount: messages.filter((m) => m.kind === "chat" && m.sender === "user")
+          .length,
         updatedAt: new Date().toISOString(),
       };
 
@@ -86,11 +95,7 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
       title: "루나와의 새 대화",
       sceneId: firstScene.id,
       affection: INITIAL_AFFECTION,
-      openingMessage: {
-        id: crypto.randomUUID(),
-        sender: "ai",
-        text: getSceneOpeningLine(firstScene.id),
-      },
+      openingMessageText: getSceneOpeningLine(lunaEpisode, firstScene.id),
     });
     router.push(`/chat/luna?sessionId=${newSession.sessionId}`);
   }
@@ -128,6 +133,7 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
         homeHref="/"
         characterHref="/characters/luna"
         sessionTitle={activeSession.title}
+        storyEventIds={activeSession.storyEventIds}
         onStartNewConversation={handleStartNewConversation}
       />
       <StoryChatPanel
@@ -138,7 +144,16 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
           sceneId: activeSession.currentSceneId,
           turnCount: activeSession.turnCount,
           affection: activeSession.affection,
-          triggeredEvents: activeSession.triggeredEvents,
+          sceneProgressFlags: activeSession.sceneProgressFlags,
+          completedSceneIds: activeSession.completedSceneIds,
+          unlockedSceneIds: activeSession.unlockedSceneIds,
+          storyEventIds: activeSession.storyEventIds,
+          episodeStatus: activeSession.episodeStatus,
+          epilogueStage: activeSession.epilogueStage,
+          fatherMessageSent: activeSession.fatherMessageSent,
+          fatherReplyReceived: activeSession.fatherReplyReceived,
+          promises: activeSession.promises,
+          sceneHintNoticeShown: activeSession.sceneHintNoticeShown,
         }}
         onStateChange={handleStateChange}
       />

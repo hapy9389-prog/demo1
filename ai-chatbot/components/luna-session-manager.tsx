@@ -13,8 +13,12 @@ import {
   renameSession,
 } from "@/lib/story-session-storage";
 import type { StorySession } from "@/lib/story-session-types";
-import { INITIAL_AFFECTION, getSceneById, lunaEpisode } from "@/lib/story-scenes";
-import { getSceneOpeningLine } from "@/lib/mock-story-engine";
+import {
+  INITIAL_AFFECTION,
+  getSceneById,
+  getSceneOpeningLine,
+  lunaEpisode,
+} from "@/lib/story-scenes";
 
 const CHARACTER_ID = "luna";
 
@@ -43,11 +47,7 @@ export function LunaSessionManager() {
       title: "루나와의 새 대화",
       sceneId: firstScene.id,
       affection: INITIAL_AFFECTION,
-      openingMessage: {
-        id: crypto.randomUUID(),
-        sender: "ai",
-        text: getSceneOpeningLine(firstScene.id),
-      },
+      openingMessageText: getSceneOpeningLine(lunaEpisode, firstScene.id),
     });
     router.push(`/chat/luna?sessionId=${session.sessionId}`);
   }
