@@ -14,10 +14,18 @@ export type Character = {
   description: string;
   /** 아바타 대신 사용할 이모지 (이미지 파일 없이 간단하게 표현) */
   avatar: string;
+  /** 홈 화면 카드에 표시할 장르 */
+  genre: string;
   /** 사용자가 메시지를 보낼 때마다 돌려줄 고정된 목업 답변 */
   mockReply: string;
   /** 채팅방을 처음 열었을 때 이미 보여줄 예시 대화 */
   initialMessages: Message[];
+  /** 캐릭터 상세 페이지용 좀 더 긴 소개 (아직 상세 페이지가 없는 캐릭터는 비워둠) */
+  intro?: string;
+  /** 캐릭터 상세 페이지용 성격 설명 */
+  personality?: string;
+  /** 캐릭터 상세 페이지용 세계관 설명 */
+  worldview?: string;
 };
 
 export const characters: Character[] = [
@@ -26,6 +34,13 @@ export const characters: Character[] = [
     name: "루나",
     description: "밤하늘을 좋아하는 다정한 상담가",
     avatar: "🌙",
+    genre: "감성 드라마",
+    intro:
+      "늦은 밤 학교 옥상에서 혼자 별을 보는 걸 좋아하는 아이. 낯을 많이 가리지만, 한 번 마음을 열면 누구보다 다정해져요.",
+    personality:
+      "겉으로는 무심하고 까칠해 보이지만, 마음을 연 상대에게는 누구보다 다정하고 세심하게 챙겨주는 성격이에요.",
+    worldview:
+      "평범한 고등학교가 배경이지만, 등장인물들은 저마다 말 못 할 사정을 안고 있어요. 루나는 답답한 마음이 들 때마다 아무도 없는 늦은 밤 옥상에 올라가 별을 보며 마음을 달래곤 해요.",
     mockReply: "그렇구나, 네 이야기를 들으니 나도 기분이 좋아져. 조금 더 말해줄래?",
     initialMessages: [
       {
@@ -50,6 +65,7 @@ export const characters: Character[] = [
     name: "카이",
     description: "장난기 넘치는 게임 친구",
     avatar: "🎮",
+    genre: "코미디",
     mockReply: "오, 재밌겠는데? 나도 껴줘! 다음엔 뭐 할 거야?",
     initialMessages: [
       {
@@ -74,6 +90,7 @@ export const characters: Character[] = [
     name: "하은",
     description: "책과 글쓰기를 좋아하는 차분한 친구",
     avatar: "📚",
+    genre: "잔잔한 힐링",
     mockReply: "흥미로운 이야기네요. 그 부분에 대해 조금 더 자세히 들려주실래요?",
     initialMessages: [
       {
@@ -94,3 +111,8 @@ export const characters: Character[] = [
     ],
   },
 ];
+
+/** id로 캐릭터를 찾습니다. */
+export function getCharacterById(id: string): Character | undefined {
+  return characters.find((character) => character.id === id);
+}

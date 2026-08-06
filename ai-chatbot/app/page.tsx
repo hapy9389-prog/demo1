@@ -1,73 +1,46 @@
-// AI 캐릭터 채팅 서비스의 첫 화면입니다.
-// 왼쪽에는 캐릭터 목록, 가운데는 선택한 캐릭터와의 채팅 화면을 보여줍니다.
-// 아직 실제 AI API는 연결하지 않았고, 메시지를 보내면 고정된 목업 답변이 돌아옵니다.
+// 홈 화면입니다. 서비스 이름/소개와 캐릭터 카드 목록을 보여줍니다.
+// 실제 채팅/캐릭터 상세 화면은 각각 /chat/luna, /characters/luna 라우트에서 담당합니다.
 
-"use client";
+import type { Metadata } from "next";
+import { characters } from "@/lib/characters";
+import { CharacterCard } from "@/components/character-card";
 
-import { useState } from "react";
-import { CharacterSidebar } from "@/components/character-sidebar";
-import { ChatPanel } from "@/components/chat-panel";
-import { StoryChatPanel } from "@/components/story-chat-panel";
-import { characters, type Message } from "@/lib/characters";
+// 서비스 이름은 아직 정해진 게 없어서 임시로 이 한 곳에만 적어뒀습니다.
+// 나중에 실제 서비스명이 정해지면 여기만 바꾸면 됩니다.
+const SERVICE_NAME = "스토리챗";
 
-// 이번 프로토타입에서는 루나만 스토리 진행형 대화를 사용합니다.
-const STORY_CHARACTER_ID = "luna";
+export const metadata: Metadata = {
+  title: SERVICE_NAME,
+  description: "AI 캐릭터와 함께 나만의 이야기를 만들어가는 채팅 서비스",
+};
 
-// 캐릭터 id별로 메시지 목록을 저장하는 타입
-type MessagesByCharacter = Record<string, Message[]>;
-
-function createInitialMessages(): MessagesByCharacter {
-  const initial: MessagesByCharacter = {};
-  for (const character of characters) {
-    initial[character.id] = character.initialMessages;
-  }
-  return initial;
-}
+// 지금은 루나만 캐릭터 상세 페이지가 준비되어 있습니다.
+const CHARACTER_HREFS: Record<string, string> = {
+  luna: "/characters/luna",
+};
 
 export default function Home() {
-  const [selectedId, setSelectedId] = useState(characters[0].id);
-  const [messagesByCharacter, setMessagesByCharacter] =
-    useState<MessagesByCharacter>(createInitialMessages);
-
-  const selectedCharacter =
-    characters.find((character) => character.id === selectedId) ??
-    characters[0];
-  const messages = messagesByCharacter[selectedId] ?? [];
-
-  function handleSend(text: string) {
-    const userMessage: Message = {
-      id: `${selectedId}-${Date.now()}-user`,
-      sender: "user",
-      text,
-    };
-    const aiMessage: Message = {
-      id: `${selectedId}-${Date.now()}-ai`,
-      sender: "ai",
-      text: selectedCharacter.mockReply,
-    };
-
-    setMessagesByCharacter((prev) => ({
-      ...prev,
-      [selectedId]: [...(prev[selectedId] ?? []), userMessage, aiMessage],
-    }));
-  }
-
   return (
-    <div className="flex h-screen w-full flex-col bg-neutral-950 text-neutral-100 md:flex-row">
-      <CharacterSidebar
-        characters={characters}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-      />
-      {selectedId === STORY_CHARACTER_ID ? (
-        <StoryChatPanel character={selectedCharacter} />
-      ) : (
-        <ChatPanel
-          character={selectedCharacter}
-          messages={messages}
-          onSend={handleSend}
-        />
-      )}
-    </div>
+    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 bg-neutral-950 px-4 py-12 text-neutral-100 sm:px-6">
+      <section className="flex flex-col gap-3 text-center sm:text-left">
+        <h1 className="text-3xl font-semibold text-neutral-50">
+          {SERVICE_NAME}
+        </h1>
+        <p className="text-sm text-neutral-400 sm:text-base">
+          AI 캐릭터와 함께, 나만의 이야기를 만들어가는 채팅 서비스예요.
+          마음에 드는 캐릭터를 골라 대화를 시작해보세요.
+        </p>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {characters.map((character) => (
+          <CharacterCard
+            key={character.id}
+            character={character}
+            href={CHARACTER_HREFS[character.id]}
+          />
+        ))}
+      </section>
+    </main>
   );
 }
