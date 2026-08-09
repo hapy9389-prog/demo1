@@ -80,6 +80,9 @@ function migrateSession(raw: any): StorySession {
       fatherReplyReceived: Boolean(raw.fatherReplyReceived),
       promises: Array.isArray(raw.promises) ? raw.promises : [],
       sceneHintNoticeShown: Boolean(raw.sceneHintNoticeShown),
+      // 이 필드가 생기기 전에 저장된 세션(현재 포맷이지만 introShown이 없음)은
+      // 이미 대화를 시작한 세션이므로 true로 취급해서 온보딩 안내가 다시 뜨지 않게 합니다.
+      introShown: typeof raw.introShown === "boolean" ? raw.introShown : true,
     };
   }
 
@@ -113,6 +116,8 @@ function migrateSession(raw: any): StorySession {
     fatherReplyReceived: false,
     promises: [],
     sceneHintNoticeShown: false,
+    // 옛 형식 세션도 이미 대화가 진행 중이었으므로 온보딩 안내를 다시 보여주지 않습니다.
+    introShown: true,
   };
 }
 
@@ -222,6 +227,8 @@ export function createSession(input: CreateSessionInput): StorySession {
     fatherReplyReceived: false,
     promises: [],
     sceneHintNoticeShown: false,
+    // 새로 만든 세션에서만 온보딩 안내를 한 번 보여줍니다 (이어하기 세션은 항상 true로 시작).
+    introShown: false,
     createdAt: now,
     updatedAt: now,
   };

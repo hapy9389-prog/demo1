@@ -78,6 +78,7 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
         fatherReplyReceived: state.fatherReplyReceived,
         promises: state.promises,
         sceneHintNoticeShown: state.sceneHintNoticeShown,
+        introShown: state.introShown,
         conversationCount: messages.filter((m) => m.kind === "chat" && m.sender === "user")
           .length,
         updatedAt: new Date().toISOString(),
@@ -154,6 +155,7 @@ export function LunaChatScreen({ sessionId }: LunaChatScreenProps) {
           fatherReplyReceived: activeSession.fatherReplyReceived,
           promises: activeSession.promises,
           sceneHintNoticeShown: activeSession.sceneHintNoticeShown,
+          introShown: activeSession.introShown,
         }}
         onStateChange={handleStateChange}
       />

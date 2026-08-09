@@ -44,4 +44,6 @@ export type StorySession = {
   promises: string[];
   /** 이 장면에서 "정체 안내"(자동 힌트)를 한 번이라도 보여준 적이 있는지 (장면이 바뀌면 리셋) */
   sceneHintNoticeShown: boolean;
+  /** 이 세션에서 시작 안내 화면(온보딩)을 이미 봤는지 (lib/story-types.ts의 StoryState와 같은 개념) */
+  introShown: boolean;
 };

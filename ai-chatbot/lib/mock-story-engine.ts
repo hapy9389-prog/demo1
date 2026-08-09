@@ -12,6 +12,7 @@
 // components/story-chat-panel.tsx에서 import 한 줄만 바꾸면 됩니다.
 
 import type { StoryEngine, StoryEngineOutput } from "@/lib/story-types";
+import { getFreeTalkReply } from "@/lib/story-free-talk";
 
 /** 비슷한 뜻을 가진 여러 표현을 묶은 그룹 */
 type KeywordGroup = {
@@ -82,7 +83,11 @@ const SCENE_MOCK_DATA: Record<string, SceneMockData> = {
         ],
       },
     ],
-    negativeTriggerKeywords: ["무슨 일", "왜 그래", "무슨일", "말해봐", "힘든 일", "안 좋은 일"],
+    // "힘든 일"/"안 좋은 일"을 단독으로 두면, 사용자가 자기 얘기로 "오늘 학교에서 힘든
+    // 일이 있었거든" 같은 자유 대화를 했을 때도 부분 문자열로 걸려서 방어적 반응이
+    // 잘못 나왔습니다. 루나에게 캐묻는 표현("무슨 힘든 일 있었어?", "안 좋은 일 있어?")만
+    // 남도록 좁혀서, 방어 기능은 유지하면서 자유 대화와의 충돌만 없앴습니다.
+    negativeTriggerKeywords: ["무슨 일", "왜 그래", "무슨일", "말해봐", "무슨 힘든 일", "안 좋은 일 있"],
     negativeReplies: [
       "...그건, 아직은 말하고 싶지 않아. 미안해.",
       "그냥... 아무것도 아니야. 신경 쓰지 마.",
@@ -277,7 +282,15 @@ export const mockStoryEngine: StoryEngine = ({ scene, userMessage, state }) => {
     return { reply, affectionDelta: 4, newEvents: [currentStep.flagId] };
   }
 
-  // 3) 안 맞으면, 지금 단계에 어울리는 자연스러운 답변 (진행은 안 됨)
+  // 3) 진행 트리거는 아니지만, 일상 얘기(학교/날씨/음식/취미 등)로 알아볼 수 있는 말이면
+  // 그 주제에 어울리는 답변을 합니다. 진행 플래그는 건드리지 않아서 장면은 그대로 유지되고,
+  // 사용자가 나중에 다시 루나의 상황에 관심을 보이면 위 1)/2)가 계속 정상 판정합니다.
+  const freeTalk = getFreeTalkReply(userMessage, state.turnCount);
+  if (freeTalk.matched) {
+    return { reply: freeTalk.reply, affectionDelta: 1, newEvents: [] };
+  }
+
+  // 4) 그마저도 아니면, 지금 단계에 어울리는 자연스러운 답변 (진행은 안 됨)
   const reply = pickCyclingLine(currentStep.waitingReplies, state.turnCount);
   return { reply, affectionDelta: 1, newEvents: [] };
 };

@@ -26,6 +26,7 @@ import { MessageBubble } from "@/components/message-bubble";
 import { MessageInput } from "@/components/message-input";
 import { StoryStatusBar } from "@/components/story-status-bar";
 import { StoryHintPanel } from "@/components/story-hint-panel";
+import { StoryIntroCard } from "@/components/story-intro-card";
 import {
   lunaEpisode,
   getSceneById,
@@ -37,10 +38,8 @@ import {
 } from "@/lib/story-scenes";
 import { mockStoryEngine, mockEpilogueReply } from "@/lib/mock-story-engine";
 import { getSceneHint, EPILOGUE_HINT } from "@/lib/story-hints";
+import { shouldShowStallNotice, buildStallNoticeText } from "@/lib/story-guidance";
 import type { StoryState } from "@/lib/story-types";
-
-/** 같은 장면에서 이만큼 대화했는데도 진행이 없으면 "정체 안내"를 한 번 보여줍니다 */
-const STALL_NOTICE_TURN_THRESHOLD = 2;
 
 type StoryChatPanelProps = {
   character: Character;
@@ -101,10 +100,29 @@ export function StoryChatPanel({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [draft, setDraft] = useState("");
 
+  // 새 세션에서만 채팅 전에 온보딩 안내를 한 번 보여줍니다. "대화 시작하기"를 누르기 전까지는
+  // 장면/메시지 목록을 아예 렌더링하지 않고, 안내 카드만 보여줍니다.
+  if (!state.introShown) {
+    return (
+      <section className="flex min-h-0 flex-1 flex-col bg-neutral-900">
+        <ChatHeader
+          avatar={character.avatar}
+          name={character.name}
+          description={character.description}
+        />
+        <StoryIntroCard character={character} onStart={handleDismissIntro} />
+      </section>
+    );
+  }
+
   const currentScene = getSceneById(lunaEpisode, state.sceneId);
   const sceneNumber =
     lunaEpisode.scenes.findIndex((scene) => scene.id === currentScene.id) + 1;
   const isAfterStory = state.episodeStatus === "after_story";
+
+  function handleDismissIntro() {
+    commit([], { ...state, introShown: true });
+  }
 
   function handleSend(text: string) {
     const userMessage = createChatMessage("user", text);
@@ -212,23 +230,18 @@ export function StoryChatPanel({
       newMessages.push(createTransitionMessage(currentScene.transitionNarration, null, null));
     } else {
       // 장면이 안 바뀌고 그대로 머무른 턴 — 정체됐는지 확인해서 필요하면 안내를 보여줍니다.
-      // 계속 시도해도 안 풀리면 힌트 버튼을 누르라고만 하지 않고, 예시 문장을 안내에
-      // 직접 띄워서 바로 다음으로 넘어갈 수 있게 합니다. 여전히 안 풀리면
-      // STALL_NOTICE_TURN_THRESHOLD턴마다 계속 다시 보여줍니다(한 번만 보여주고 끝내지 않음).
+      // 자유 대화를 하느라 진행이 없었을 수도 있으니, "틀렸다"는 인상 대신 "계속 자유롭게
+      // 얘기해도 되고, 이야기를 이어가고 싶다면 이런 방향도 있다"는 톤으로 안내합니다
+      // (문구/조건은 lib/story-guidance.ts). 여전히 안 풀리면 STALL_NOTICE_TURN_INTERVAL턴마다
+      // 계속 다시 보여줍니다(한 번만 보여주고 끝내지 않음).
       const madeProgress = newEvents.some((flagId) =>
         currentScene.requiredEvents.includes(flagId)
       );
-      const isStallCheckpoint =
-        updatedState.turnCount >= STALL_NOTICE_TURN_THRESHOLD &&
-        updatedState.turnCount % STALL_NOTICE_TURN_THRESHOLD === 0;
 
-      if (!madeProgress && isStallCheckpoint) {
+      if (shouldShowStallNotice(updatedState.turnCount, madeProgress)) {
         updatedState.sceneHintNoticeShown = true;
         const hint = getSceneHint(currentScene, updatedState.sceneProgressFlags);
-        const noticeText = hint
-          ? `이야기가 잠시 머물러 있습니다.\n이렇게 말해보세요: "${hint.examples[0]}" 또는 "${hint.examples[1]}"`
-          : "이야기가 잠시 머물러 있습니다.\n대화 힌트를 확인해 보세요.";
-        newMessages.push(createSystemNoticeMessage(noticeText));
+        newMessages.push(createSystemNoticeMessage(buildStallNoticeText(hint)));
       }
     }
 

@@ -84,6 +84,9 @@ export type StoryState = {
   promises: string[];
   /** 이 장면에서 "정체 안내"(자동 힌트)를 한 번이라도 보여준 적이 있는지 (장면이 바뀌면 리셋) */
   sceneHintNoticeShown: boolean;
+  /** 이 세션에서 시작 안내 화면(온보딩)을 이미 봤는지. 새 세션만 false로 시작하고,
+   * 한 번 보여준 뒤에는 true로 고정돼서 이어하기 할 때 다시 뜨지 않습니다. */
+  introShown: boolean;
 };
 
 /** "이야기 기록"에 나열되는 사건 하나 (id + 화면에 보여줄 문구) */
